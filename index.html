@@ -7,15 +7,21 @@
     <style>
         body { font-family: monospace; margin: 20px; font-size: 200%; display: flex; flex-direction: column; align-items: center;}
         h1 { color: #333; }
-        ul { list-style-type: none; padding: 0; width: 300px;}
+        ul { list-style-type: none; padding: 0; width: 300px; margin: 0;}
         li { margin: 0; padding: 5px; border-radius: 5px; font-weight: bold; display: flex;}
         svg { width: 100%; height: 400px; }
-        button { margin-right: 10px; width: 35px; background: none; border: none;}
+        button { margin-right: 10px; width: 35px; background: none; border-radius: 10px; border: none;}
+        #refresh-button {width: 100px; font-size: 60%; margin: 5px;}
+        #refresh-button i {}
+        .nav {display: flex; margin-bottom: 20px;}
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
-    <ul id="cluster-list"></ul>
+    <div class="nav">
+        <button id="refresh-button"><i class="fas fa-sync-alt"></i></button>
+        <ul id="cluster-list"></ul>
+    </div>
     <svg id="cluster-graphic"></svg>
 </body>
 </html>
@@ -402,6 +408,12 @@
 
         updateURLWithLocks({ foot: lockedFoot, turns: lockedTurns });
     }
+
+    function refreshPage() {
+        location.reload();
+    }
+
+    document.getElementById('refresh-button').addEventListener('click', refreshPage);
 
 
     // Get length from URL or default to 3
