@@ -209,7 +209,7 @@
 
             const cluster = [];
             const startEdge = getParameterByName('startEdge');
-            const initialEdge = startEdge !== 'any' ? startEdge.slice(1) : null;
+            const initialEdge = (startEdge && startEdge !== 'any') ? startEdge.slice(1) : null;
             const initialUsedTypes = new Set(lockedTurns.filter(turn => turn).map(turn => turn.type));
             const initialEdgeChangeOccurred = false;
 
