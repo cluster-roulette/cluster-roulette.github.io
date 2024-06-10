@@ -464,7 +464,6 @@
                 // drawPoint(hookEntryEndX, hookEntryEndY, "lilac", 3);  // End of entry path
 
                 if(changeCircle()) {
-                    console.log("changing circle");
                     centerX = centerX + (hookExitEndX - centerX) * 2;
                     centerY = centerY + (hookExitEndY - centerY) * 2;
                     hookExitEndAngle = calculateAngle(centerX, centerY, hookExitEndX, hookExitEndY);
@@ -540,10 +539,10 @@
 
     function parseLockedParametersFromURL() {
         const lockedParam = getParameterByName('locked');
-        if (!lockedParam) return { foot: null, turns: [] };
-        const [footStr, ...turnsList] = lockedParam.split(',');
         const startEdge = getParameterByName('startEdge') || 'any';
         const excludedTurns = getParameterByName('excludedTurns') ? getParameterByName('excludedTurns').split(',') : [];
+        if (!lockedParam) return { foot: null, turns: [], startEdge: startEdge, excludedTurns: excludedTurns};
+        const [footStr, ...turnsList] = lockedParam.split(',');
         return {
             foot: footStr || null,
             turns: turnsList.map(turnStr => {
@@ -637,11 +636,11 @@
     const length = parseInt(getParameterByName('length')) || 3;
     const { foot: lockedFoot, turns: lockedTurns, startEdge, excludedTurns } = parseLockedParametersFromURL();
     document.getElementById('start-edge-dropdown').value = startEdge;
-    const foot = startEdge !== 'any' ? startEdge[0] === 'R' ? 'right' : 'left' : lockedFoot || (Math.random() > 0.5 ? 'left' : 'right');
+    const foot = (startEdge && startEdge !== 'any') ? startEdge[0] === 'R' ? 'right' : 'left' : lockedFoot || (Math.random() > 0.5 ? 'left' : 'right');
     const cluster = generateCluster(length, lockedTurns);
 
     document.querySelectorAll('#allowed-turns input[type=checkbox]').forEach(checkbox => {
-        checkbox.checked = !excludedTurns.includes(checkbox.value);
+        checkbox.checked = !excludedTurns || !excludedTurns.includes(checkbox.value);
     });
 
     // Display the foot side with lock button
