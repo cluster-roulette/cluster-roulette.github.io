@@ -6,23 +6,62 @@
     <title>Artistic Skating Cluster Generator</title>
     <style>
         body { font-family: monospace; margin: 20px; font-size: 200%; display: flex; flex-direction: column; align-items: center;}
+        header { margin: 0 0 50px 0; width: 100%;}
+        header h1 { border-bottom: 1px solid black; font-size: 100%; font-weight: normal;}
+        header .actions { margin: 0 0 30px 0; display: flex; flex-wrap: wrap;}
+        header .actions > * { margin-top: 10px;}
+        footer { margin: 80px 0 0 0; border-top: 1px solid black;  width: 100%;}
+        header button {font-weight: bold; font-size: 12pt; line-height: 20px;}
         h1 { color: #333; }
         ul { list-style-type: none; padding: 0; width: 300px; margin: 0;}
         li { margin: 0; padding: 5px; border-radius: 5px; font-weight: bold; display: flex;}
         svg { width: 100%; height: 400px; }
-        button { margin-right: 10px; width: 35px; background: none; border-radius: 10px; border: none;}
+        button { margin-right: 10px; background: none; border-radius: 10px; border: none; cursor: pointer; font-family: monospace;}
         #refresh-button {width: 100px; font-size: 60%; margin: 5px;}
         #refresh-button i {}
+        .start-edge-label {font-size: 12pt; line-height: 30px;}
+        #start-edge-dropdown {font-size: 12pt; line-height: 20px; border: none; margin-right: 20px; font-family: monospace;}
         .nav {display: flex; margin-bottom: 20px;}
+        #allowed-turns {display: flex; font-size: 12pt; flex-wrap: wrap; width: 100%;}
+        #allowed-turns li {display: flex; font-size: 12pt}
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
+    <header>
+        <h1>Cluster roulette</h1>
+        <div class="actions">
+            <span class="start-edge-label">Starting with edge: </span>
+            <select id="start-edge-dropdown">
+                <option value="any">Any</option>
+                <option value="ROB">ROB</option>
+                <option value="ROF">ROF</option>
+                <option value="RIB">RIB</option>
+                <option value="RIF">RIF</option>
+                <option value="LOB">LOB</option>
+                <option value="LOF">LOF</option>
+                <option value="LIB">LIB</option>
+                <option value="LIF">LIF</option>
+            </select>
+            <div style="flex: 1;"></div>
+            <button id="permalink-button"><i class="fas fa-link"></i> Permalink to this cluster</button>
+        </div>
+    </header>
     <div class="nav">
         <button id="refresh-button"><i class="fas fa-sync-alt"></i></button>
         <ul id="cluster-list"></ul>
     </div>
     <svg id="cluster-graphic"></svg>
+    <footer>
+        <ul id="allowed-turns">
+            <li><input value="three turn" type="checkbox">Three turns</li>
+            <li><input value="bracket" type="checkbox">Brackets</li>
+            <li><input value="rocker" type="checkbox">Rockers</li>
+            <li><input value="counter" type="checkbox">Counters</li>
+            <li><input value="loop" type="checkbox">Loops</li>
+            <li><input value="twizzle" type="checkbox">Twizzles</li>
+        </ul>
+    </footer>
 </body>
 </html>
 
@@ -31,22 +70,34 @@
 <script>
         // Define the turns with their entry and exit edges
         const turns = [
-            { entry: "OF", exit: "IB", type: "three turn" },
-            { entry: "IF", exit: "OB", type: "three turn" },
-            { entry: "OB", exit: "IF", type: "three turn" },
-            { entry: "IB", exit: "OF", type: "three turn" },
-            { entry: "OF", exit: "IB", type: "bracket" },
-            { entry: "IF", exit: "OB", type: "bracket" },
-            { entry: "OB", exit: "IF", type: "bracket" },
-            { entry: "IB", exit: "OF", type: "bracket" },
-            { entry: "OB", exit: "OF", type: "rocker" },
-            { entry: "IB", exit: "IF", type: "rocker" },
-            { entry: "OF", exit: "OB", type: "rocker" },
-            { entry: "IF", exit: "IB", type: "rocker" },
-            { entry: "OF", exit: "OB", type: "counter" },
-            { entry: "IF", exit: "IB", type: "counter" },
-            { entry: "OB", exit: "OF", type: "counter" },
-            { entry: "IB", exit: "IF", type: "counter" }
+            { entry: "OF", exit: "IB", type: "three turn", weight: 1 },
+            { entry: "IF", exit: "OB", type: "three turn", weight: 1 },
+            { entry: "OB", exit: "IF", type: "three turn", weight: 1 },
+            { entry: "IB", exit: "OF", type: "three turn", weight: 1 },
+            { entry: "OF", exit: "IB", type: "bracket", weight: 1 },
+            { entry: "IF", exit: "OB", type: "bracket", weight: 1 },
+            { entry: "OB", exit: "IF", type: "bracket", weight: 1 },
+            { entry: "IB", exit: "OF", type: "bracket", weight: 1 },
+            { entry: "OB", exit: "OF", type: "rocker", weight: 1 },
+            { entry: "IB", exit: "IF", type: "rocker", weight: 1 },
+            { entry: "OF", exit: "OB", type: "rocker", weight: 1 },
+            { entry: "IF", exit: "IB", type: "rocker", weight: 1 },
+            { entry: "OF", exit: "OB", type: "counter", weight: 1 },
+            { entry: "IF", exit: "IB", type: "counter", weight: 1 },
+            { entry: "OB", exit: "OF", type: "counter", weight: 1 },
+            { entry: "IB", exit: "IF", type: "counter", weight: 1 },
+            { entry: "OF", exit: "OF", type: "loop", weight: 1 },
+            { entry: "IF", exit: "IF", type: "loop", weight: 1 },
+            { entry: "OB", exit: "OB", type: "loop", weight: 1 },
+            { entry: "IB", exit: "IB", type: "loop", weight: 1 },
+            { entry: "OF", exit: "OF", type: "twizzle", variant: "even", weight: 0.5 },
+            { entry: "IF", exit: "IF", type: "twizzle", variant: "even", weight: 0.5 },
+            { entry: "OB", exit: "OB", type: "twizzle", variant: "even", weight: 0.5 },
+            { entry: "IB", exit: "IB", type: "twizzle", variant: "even", weight: 0.5 },
+            { entry: "OF", exit: "IB", type: "twizzle", variant: "odd", weight: 0.5 },
+            { entry: "IF", exit: "OB", type: "twizzle", variant: "odd", weight: 0.5 },
+            { entry: "OB", exit: "IF", type: "twizzle", variant: "odd", weight: 0.5 },
+            { entry: "IB", exit: "OF", type: "twizzle", variant: "odd", weight: 0.5 }
         ];
 
         const colors = ["#2129FF", "#FF6F00", "#21B1FF"];
@@ -60,7 +111,8 @@
                 "OB": "Outside Backward",
                 "IB": "Inside Backward"
             };
-            return `${turn.entry} ${turn.type.charAt(0).toUpperCase() + turn.type.slice(1)}`;
+            const typeName = turn.variant? `${turn.variant}` : ``;
+            return `${turn.entry} ${turn.type.charAt(0).toUpperCase() + turn.type.slice(1)} ${typeName}`;
         }
 
 
@@ -80,6 +132,17 @@
                 [array[i], array[j]] = [array[j], array[i]];
             }
             return array;
+        }
+
+        function weightedRandom(turns) {
+            const totalWeight = turns.reduce((sum, turn) => sum + turn.weight, 0);
+            let random = Math.random() * totalWeight;
+            for (let turn of turns) {
+                if (random < turn.weight) {
+                    return turn;
+                }
+                random -= turn.weight;
+            }
         }
 
         function generateCluster(length = 3, lockedTurns = []) {
@@ -119,7 +182,9 @@
                     return generateClusterRecursively(cluster, index + 1, currentEdge, usedTypes, edgeChangeOccurred);
                 }
 
-                const shuffledTurns = shuffle([...turns]); // Shuffle turns to add randomness
+                const excludedTurnTypes = getParameterByName('excludedTurns') ? getParameterByName('excludedTurns').split(',') : [];
+                const filteredTurns = turns.filter(turn => !excludedTurnTypes.includes(turn.type));
+                const shuffledTurns = shuffle([...filteredTurns]); // Shuffle turns to add randomness
                 for (const turn of shuffledTurns) {
                     if ((!currentEdge || turn.entry === currentEdge) &&
                         !usedTypes.has(turn.type) &&
@@ -143,7 +208,8 @@
             }
 
             const cluster = [];
-            const initialEdge = null;
+            const startEdge = getParameterByName('startEdge');
+            const initialEdge = startEdge !== 'any' ? startEdge.slice(1) : null;
             const initialUsedTypes = new Set(lockedTurns.filter(turn => turn).map(turn => turn.type));
             const initialEdgeChangeOccurred = false;
 
@@ -167,9 +233,10 @@
             const pathAngleDeg1 = 45; // Path length in degrees
             const pathAngleDeg2 = 75; // Path length in degrees
             const hookDeg = hookRadius; // Hook length in degrees
-            const hookRad = hookDeg * (Math.PI / 180); // Convert degrees to radians
+            let hookRad = hookDeg * (Math.PI / 180); // Convert degrees to radians
             let currentAngle = Math.PI/2; // Start at the bottom of the circle (180 degrees)
             const strokeWidth = 4; // Set the desired stroke width
+            const twizzleLength = radius/4;
 
             svg.innerHTML = '';  // Clear previous drawings
 
@@ -191,7 +258,7 @@
                 }
 
                 const isInsideHook = () => {
-                    if (["three turn", "rocker"].includes(turn.type)) {
+                    if (["three turn", "rocker", "twizzle"].includes(turn.type)) {
                         return true;
                     } else {
                         return false;
@@ -227,7 +294,6 @@
                 const pathAngleRad = pathAngleDeg * (Math.PI / 180); // Convert degrees to radians
                 const turnAngleRad = 2 * pathAngleRad; // Turn angle is twice the path angle
 
-
                 // Determine direction for next point based on entry edge
                 let entryDirection = isClockWise(turn.entry)? -1 : 1;
                 let exitDirection = isClockWise(turn.exit)? -1 : 1;
@@ -237,12 +303,8 @@
                 const entryEndY = centerY + radius * Math.sin(entryEndAngle);
 
                 const hookEntryEndAngle = appendDir(turn.entry, entryEndAngle, hookRad / 2);
-                const hookEntryEndX = centerX + appendHook(radius, hookRadius) * Math.cos(hookEntryEndAngle);
-                const hookEntryEndY = centerY + appendHook(radius, hookRadius) * Math.sin(hookEntryEndAngle);
-
-                let hookExitEndAngle = appendDir(turn.entry, entryEndAngle, hookRad);
-                const hookExitEndX = centerX + radius * Math.cos(hookExitEndAngle);
-                const hookExitEndY = centerY + radius * Math.sin(hookExitEndAngle);
+                let hookEntryEndX = centerX + appendHook(radius, hookRadius) * Math.cos(hookEntryEndAngle);
+                let hookEntryEndY = centerY + appendHook(radius, hookRadius) * Math.sin(hookEntryEndAngle);
 
                 // Draw the entry path as an arc
                 const entryPath = document.createElementNS("http://www.w3.org/2000/svg", "path");
@@ -253,31 +315,149 @@
                 entryPath.setAttribute("stroke-width", strokeWidth);
                 svg.appendChild(entryPath);
 
-                // Draw the entry hook path as an arc
-                const hookEntryPath = document.createElementNS("http://www.w3.org/2000/svg", "path");
-                if(isInsideHook()) {
-                    hookEntryPath.setAttribute("d", `M ${hookEntryEndX} ${hookEntryEndY} A ${hookRadius} ${hookRadius} 0 0 ${isClockWise(turn.entry)? 1 : 0} ${centerX + radius * Math.cos(entryEndAngle)} ${centerY + radius * Math.sin(entryEndAngle)}`);
-                } else {
-                    hookEntryPath.setAttribute("d", `M ${centerX + radius * Math.cos(entryEndAngle)} ${centerY + radius * Math.sin(entryEndAngle)} A ${hookRadius} ${hookRadius} 0 0 ${isClockWise(turn.entry)? 1 : 0} ${hookEntryEndX} ${hookEntryEndY}`);
-                }
-                hookEntryPath.setAttribute("stroke", colors[turnCount]);
-                hookEntryPath.setAttribute("fill", "none");
-                hookEntryPath.setAttribute("vector-effect", "non-scaling-stroke");
-                hookEntryPath.setAttribute("stroke-width", strokeWidth);
-                svg.appendChild(hookEntryPath);
+                let hookExitEndAngle = appendDir(turn.entry, entryEndAngle, hookRad);
+                let hookExitEndX = centerX + radius * Math.cos(hookExitEndAngle);
+                let hookExitEndY = centerY + radius * Math.sin(hookExitEndAngle);
 
-                // Draw the exit hook path as an arc, adjusting for the outer hook to be pointy
-                const hookExitPath = document.createElementNS("http://www.w3.org/2000/svg", "path");
-                if(isInsideHook()) {
-                    hookExitPath.setAttribute("d", `M ${hookExitEndX} ${hookExitEndY} A ${hookRadius} ${hookRadius} 0 0 ${isClockWise(turn.entry)? 1 : 0} ${hookEntryEndX} ${hookEntryEndY}`);
+                if(["twizzle"].includes(turn.type)) {
+                    // Draw the entry hook path as an arc
+                    const hookEntryPath = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                    if(isInsideHook()) {
+                        hookEntryPath.setAttribute("d", `M ${hookEntryEndX} ${hookEntryEndY} A ${hookRadius} ${hookRadius} 0 0 ${isClockWise(turn.entry)? 1 : 0} ${centerX + radius * Math.cos(entryEndAngle)} ${centerY + radius * Math.sin(entryEndAngle)}`);
+                    } else {
+                        hookEntryPath.setAttribute("d", `M ${centerX + radius * Math.cos(entryEndAngle)} ${centerY + radius * Math.sin(entryEndAngle)} A ${hookRadius} ${hookRadius} 0 0 ${isClockWise(turn.entry)? 1 : 0} ${hookEntryEndX} ${hookEntryEndY}`);
+                    }
+                    hookEntryPath.setAttribute("stroke", colors[turnCount]);
+                    hookEntryPath.setAttribute("fill", "none");
+                    hookEntryPath.setAttribute("vector-effect", "non-scaling-stroke");
+                    hookEntryPath.setAttribute("stroke-width", strokeWidth);
+                    svg.appendChild(hookEntryPath);
+
+                    const perpendicularX = (isClockWise(turn.entry)? 1 : -1) * ((entryEndY - centerY) / radius) * twizzleLength;
+                    const perpendicularY = (isClockWise(turn.entry)? -1 : 1) * ((entryEndX - centerX) / radius) * twizzleLength;
+                    let twizzleStartX = hookEntryEndX;
+                    let twizzleStartY = hookEntryEndY;
+                    let twizzleEndX = hookEntryEndX + perpendicularX;
+                    let twizzleEndY = hookEntryEndY + perpendicularY;
+
+                    const twizzleCounts = ["even"].includes(turn.variant) ? 5 : 4;
+
+                    for (let i = 0; i < twizzleCounts; i++) {
+                        const twizzlePath = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                        twizzlePath.setAttribute("d", `M ${twizzleStartX} ${twizzleStartY}
+                                                   A12.8 12.8 0 1 ${isClockWise(turn.entry)? 0 : 1} ${twizzleEndX} ${twizzleEndY}`);
+                        twizzlePath.setAttribute("stroke", colors[turnCount]);
+                        twizzlePath.setAttribute("fill", "none");
+                        twizzlePath.setAttribute("vector-effect", "non-scaling-stroke");
+                        twizzlePath.setAttribute("stroke-width", strokeWidth);
+                        svg.appendChild(twizzlePath);
+                        twizzleStartX = twizzleEndX;
+                        twizzleStartY = twizzleEndY;
+                        twizzleEndX = twizzleEndX + perpendicularX;
+                        twizzleEndY = twizzleEndY + perpendicularY;
+                    }
+
+                    centerX += twizzleCounts * perpendicularX;
+                    centerY += twizzleCounts * perpendicularY;
+
+                    hookEntryEndX = centerX + appendHook(radius, hookRadius) * Math.cos(hookEntryEndAngle);
+                    hookEntryEndY = centerY + appendHook(radius, hookRadius) * Math.sin(hookEntryEndAngle);
+                    hookExitEndAngle = appendDir(turn.entry, entryEndAngle, hookRad);
+                    hookExitEndX = centerX + radius * Math.cos(hookExitEndAngle);
+                    hookExitEndY = centerY + radius * Math.sin(hookExitEndAngle);
+
+                    // Draw the exit hook path as an arc, adjusting for the outer hook to be pointy
+                    const hookExitPath = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                    if(isInsideHook()) {
+                        hookExitPath.setAttribute("d", `M ${hookExitEndX} ${hookExitEndY} A ${hookRadius} ${hookRadius} 0 0 ${isClockWise(turn.entry)? 1 : 0} ${hookEntryEndX} ${hookEntryEndY}`);
+                    } else {
+                        hookExitPath.setAttribute("d", `M ${hookEntryEndX} ${hookEntryEndY} A ${hookRadius} ${hookRadius} 0 0 ${isClockWise(turn.entry)? 1 : 0} ${hookExitEndX} ${hookExitEndY}`);
+                    }
+                    hookExitPath.setAttribute("stroke", colors[turnCount]);
+                    hookExitPath.setAttribute("fill", "none");
+                    hookExitPath.setAttribute("vector-effect", "non-scaling-stroke");
+                    hookExitPath.setAttribute("stroke-width", strokeWidth);
+                    svg.appendChild(hookExitPath);
+
+                } else if(["loop"].includes(turn.type)) {
+
+                    loopRad = hookRad * 1.3;
+
+                    hookExitEndAngle = appendDir(turn.entry, entryEndAngle, loopRad);
+                    hookExitEndX = centerX + radius * Math.cos(hookExitEndAngle);
+                    hookExitEndY = centerY + radius * Math.sin(hookExitEndAngle);
+
+                    // Calculate control points and end points for the teardrop loop
+                    const loopRadius = radius * 2 / 3; // Loop should go 2/3 of the radius to the inside
+                    const loopControlRadius = radius; // Control radius for the bezier curve
+                    const arcAngleDif = loopRad/3;
+                    const loopAngle = loopRad;
+
+                    // Calculate the first control point for the Bezier curve
+                    const loopControlAngle1 = appendDir(turn.entry, entryEndAngle, loopAngle+arcAngleDif/4);
+                    const loopControlX1 = centerX + loopControlRadius * Math.cos(loopControlAngle1);
+                    const loopControlY1 = centerY + loopControlRadius * Math.sin(loopControlAngle1);
+
+                    // Calculate the start point of the arc
+                    const arcStartAngle = appendDir(turn.entry, entryEndAngle, loopAngle+arcAngleDif);
+                    const arcStartX = centerX + loopRadius * Math.cos(arcStartAngle);
+                    const arcStartY = centerY + loopRadius * Math.sin(arcStartAngle);
+                    // Calculate the center point of the arc
+                    const arcCenterAngle = appendDir(turn.entry, entryEndAngle, loopAngle/2);
+                    const arcCenterX = centerX + loopRadius * Math.cos(arcCenterAngle);
+                    const arcCenterY = centerY + loopRadius * Math.sin(arcCenterAngle);
+                    // Calculate the end point of the arc
+                    const arcEndAngle = appendDir(turn.entry, entryEndAngle, -arcAngleDif);
+                    const arcEndX = centerX + loopRadius * Math.cos(arcEndAngle);
+                    const arcEndY = centerY + loopRadius * Math.sin(arcEndAngle);
+                    // Calculate the end point of the arc
+                    const loopEndAngle = appendDir(turn.entry, entryEndAngle, loopAngle);
+                    const loopEndX = centerX + radius * Math.cos(loopEndAngle);
+                    const loopEndY = centerY + radius * Math.sin(loopEndAngle);
+
+                    // Calculate the second control point for the Bezier curve
+                    const loopControlAngle2 = appendDir(turn.entry, entryEndAngle, -arcAngleDif/4);
+                    const loopControlX2 = centerX + loopControlRadius * Math.cos(loopControlAngle2);
+                    const loopControlY2 = centerY + loopControlRadius * Math.sin(loopControlAngle2);
+
+                    // Draw the loop path
+                    const loopPath = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                    loopPath.setAttribute("d", `M ${entryEndX} ${entryEndY}
+                                               Q${loopControlX1} ${loopControlY1} ${arcStartX} ${arcStartY}
+                                               A12.8 12.8 0 1 ${isClockWise(turn.entry)? 0 : 1} ${arcEndX} ${arcEndY}
+                                               Q${loopControlX2} ${loopControlY2} ${loopEndX} ${loopEndY}`);
+                    loopPath.setAttribute("stroke", colors[turnCount]);
+                    loopPath.setAttribute("fill", "none");
+                    loopPath.setAttribute("vector-effect", "non-scaling-stroke");
+                    loopPath.setAttribute("stroke-width", strokeWidth);
+                    svg.appendChild(loopPath);
                 } else {
-                    hookExitPath.setAttribute("d", `M ${hookEntryEndX} ${hookEntryEndY} A ${hookRadius} ${hookRadius} 0 0 ${isClockWise(turn.entry)? 1 : 0} ${hookExitEndX} ${hookExitEndY}`);
+                    // Draw the entry hook path as an arc
+                    const hookEntryPath = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                    if(isInsideHook()) {
+                        hookEntryPath.setAttribute("d", `M ${hookEntryEndX} ${hookEntryEndY} A ${hookRadius} ${hookRadius} 0 0 ${isClockWise(turn.entry)? 1 : 0} ${centerX + radius * Math.cos(entryEndAngle)} ${centerY + radius * Math.sin(entryEndAngle)}`);
+                    } else {
+                        hookEntryPath.setAttribute("d", `M ${centerX + radius * Math.cos(entryEndAngle)} ${centerY + radius * Math.sin(entryEndAngle)} A ${hookRadius} ${hookRadius} 0 0 ${isClockWise(turn.entry)? 1 : 0} ${hookEntryEndX} ${hookEntryEndY}`);
+                    }
+                    hookEntryPath.setAttribute("stroke", colors[turnCount]);
+                    hookEntryPath.setAttribute("fill", "none");
+                    hookEntryPath.setAttribute("vector-effect", "non-scaling-stroke");
+                    hookEntryPath.setAttribute("stroke-width", strokeWidth);
+                    svg.appendChild(hookEntryPath);
+
+                    // Draw the exit hook path as an arc, adjusting for the outer hook to be pointy
+                    const hookExitPath = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                    if(isInsideHook()) {
+                        hookExitPath.setAttribute("d", `M ${hookExitEndX} ${hookExitEndY} A ${hookRadius} ${hookRadius} 0 0 ${isClockWise(turn.entry)? 1 : 0} ${hookEntryEndX} ${hookEntryEndY}`);
+                    } else {
+                        hookExitPath.setAttribute("d", `M ${hookEntryEndX} ${hookEntryEndY} A ${hookRadius} ${hookRadius} 0 0 ${isClockWise(turn.entry)? 1 : 0} ${hookExitEndX} ${hookExitEndY}`);
+                    }
+                    hookExitPath.setAttribute("stroke", colors[turnCount]);
+                    hookExitPath.setAttribute("fill", "none");
+                    hookExitPath.setAttribute("vector-effect", "non-scaling-stroke");
+                    hookExitPath.setAttribute("stroke-width", strokeWidth);
+                    svg.appendChild(hookExitPath);
                 }
-                hookExitPath.setAttribute("stroke", colors[turnCount]);
-                hookExitPath.setAttribute("fill", "none");
-                hookExitPath.setAttribute("vector-effect", "non-scaling-stroke");
-                hookExitPath.setAttribute("stroke-width", strokeWidth);
-                svg.appendChild(hookExitPath);
 
                 // drawPoint(centerX + radius * Math.cos(startAngle), centerY + radius * Math.sin(startAngle), "green", 5);  // Starting point
                 // drawPoint(entryEndX, entryEndY, "orange", 2);  // End of entry path
@@ -347,8 +527,14 @@
 
     function updateURLWithLocks(lockedParameters) {
         const url = new URL(window.location.href);
-        const lockedParam = [lockedParameters.foot, ...lockedParameters.turns.map(turn => turn ? `${turn.entry}-${turn.type}` : '')].join(',');
+        const lockedParam = [lockedParameters.foot, ...lockedParameters.turns.map(turn => turn ? `${turn.entry}-${turn.type}${turn.variant ? `-${turn.variant}` : ''}` : '')].join(',');
         url.searchParams.set('locked', lockedParam);
+        const startEdge = document.getElementById('start-edge-dropdown').value;
+        url.searchParams.set('startEdge', startEdge);
+        const excludedTurnTypes = Array.from(document.querySelectorAll('#allowed-turns input[type=checkbox]'))
+            .filter(cb => !cb.checked)
+            .map(cb => cb.value);
+        url.searchParams.set('excludedTurns', excludedTurnTypes.join(','));
         window.history.pushState({}, '', url);
     }
 
@@ -356,15 +542,18 @@
         const lockedParam = getParameterByName('locked');
         if (!lockedParam) return { foot: null, turns: [] };
         const [footStr, ...turnsList] = lockedParam.split(',');
+        const startEdge = getParameterByName('startEdge') || 'any';
+        const excludedTurns = getParameterByName('excludedTurns') ? getParameterByName('excludedTurns').split(',') : [];
         return {
             foot: footStr || null,
             turns: turnsList.map(turnStr => {
                 if (!turnStr) return null;
-                const [entry, type] = turnStr.split('-');
-                console.log(entry, type);
-                console.log(turns);
-                return turns.find(turn => turn.entry === entry && turn.type.toLowerCase() === type.toLowerCase());
-            })
+                const [entry, type, ...variantParts] = turnStr.split('-');
+                const variant = variantParts.join('-');
+                return turns.find(turn => turn.entry === entry && turn.type.toLowerCase() === type.toLowerCase() && (!turn.variant || turn.variant.toLowerCase() === variant.toLowerCase()));
+            }),
+            startEdge: startEdge,
+            excludedTurns: excludedTurns
         };
     }
 
@@ -381,9 +570,10 @@
         const lockedTurns = Array.from(lockButtons).slice(1).map((button, i) => {
             if (button.classList.contains('locked')) {
                 const text = button.parentElement.lastChild.textContent;
-                const [entry, ...type] = text.split(' ');
-                console.log(entry, type, text, turns.find(turn => turn.entry === entry && turn.type.toLowerCase() === type.join(" ").toLowerCase()));
-                return turns.find(turn => turn.entry === entry && turn.type.toLowerCase() === type.join(" ").toLowerCase());
+                const [entry, ...typeAndVariant] = text.split(' ');
+                const type = typeAndVariant[0];
+                const variant = typeAndVariant.slice(1).join(' ') || null;
+                return turns.find(turn => turn.entry === entry && turn.type.toLowerCase() === type.toLowerCase() && (!turn.variant || turn.variant.toLowerCase() === (variant || '').toLowerCase()));
             }
             return null;
         });
@@ -413,15 +603,46 @@
         location.reload();
     }
 
-    document.getElementById('refresh-button').addEventListener('click', refreshPage);
+    function createPermalink() {
+        const lockedFoot = foot;
+        const lockedTurns = cluster.map(turn => `${turn.entry}-${turn.type}${turn.variant ? `-${turn.variant}` : ''}`);
+        const lockedParam = [lockedFoot, ...lockedTurns].join(',');
+        const url = new URL(window.location.href);
+        url.searchParams.set('locked', lockedParam);
+        window.open(url.toString(), '_blank');
+    }
 
+    document.getElementById('refresh-button').addEventListener('click', refreshPage);
+    document.getElementById('permalink-button').addEventListener('click', createPermalink);
+
+    document.getElementById('start-edge-dropdown').addEventListener('change', () => {
+        const startEdge = document.getElementById('start-edge-dropdown').value;
+        const url = new URL(window.location.href);
+        url.searchParams.set('startEdge', startEdge);
+        window.location.href = url.toString();
+    });
+
+    document.querySelectorAll('#allowed-turns input[type=checkbox]').forEach(checkbox => {
+        checkbox.addEventListener('change', () => {
+            const excludedTurnTypes = Array.from(document.querySelectorAll('#allowed-turns input[type=checkbox]'))
+                .filter(cb => !cb.checked)
+                .map(cb => cb.value);
+            const url = new URL(window.location.href);
+            url.searchParams.set('excludedTurns', excludedTurnTypes.join(','));
+            window.location.href = url.toString();
+        });
+    });
 
     // Get length from URL or default to 3
     const length = parseInt(getParameterByName('length')) || 3;
-    const { foot: lockedFoot, turns: lockedTurns } = parseLockedParametersFromURL();
-    const foot = lockedFoot || (Math.random() > 0.5 ? 'left' : 'right');
+    const { foot: lockedFoot, turns: lockedTurns, startEdge, excludedTurns } = parseLockedParametersFromURL();
+    document.getElementById('start-edge-dropdown').value = startEdge;
+    const foot = startEdge !== 'any' ? startEdge[0] === 'R' ? 'right' : 'left' : lockedFoot || (Math.random() > 0.5 ? 'left' : 'right');
     const cluster = generateCluster(length, lockedTurns);
 
+    document.querySelectorAll('#allowed-turns input[type=checkbox]').forEach(checkbox => {
+        checkbox.checked = !excludedTurns.includes(checkbox.value);
+    });
 
     // Display the foot side with lock button
     const clusterList = document.getElementById('cluster-list');
