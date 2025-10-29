@@ -34,14 +34,14 @@
             <span class="start-edge-label">Starting with edge: </span>
             <select id="start-edge-dropdown">
                 <option value="any">Any</option>
-                <option value="ROB">ROB</option>
-                <option value="ROF">ROF</option>
-                <option value="RIB">RIB</option>
-                <option value="RIF">RIF</option>
-                <option value="LOB">LOB</option>
-                <option value="LOF">LOF</option>
-                <option value="LIB">LIB</option>
-                <option value="LIF">LIF</option>
+                <option value="RBO">RBO</option>
+                <option value="RFO">RFO</option>
+                <option value="RBI">RBI</option>
+                <option value="RFI">RFI</option>
+                <option value="LBO">LBO</option>
+                <option value="LFO">LFO</option>
+                <option value="LBI">LBI</option>
+                <option value="LFI">LFI</option>
             </select>
             <div style="flex: 1;"></div>
             <button id="permalink-button"><i class="fas fa-link"></i> Permalink to this cluster</button>
@@ -70,34 +70,34 @@
 <script>
         // Define the turns with their entry and exit edges
         const turns = [
-            { entry: "OF", exit: "IB", type: "three turn", weight: 1 },
-            { entry: "IF", exit: "OB", type: "three turn", weight: 1 },
-            { entry: "OB", exit: "IF", type: "three turn", weight: 1 },
-            { entry: "IB", exit: "OF", type: "three turn", weight: 1 },
-            { entry: "OF", exit: "IB", type: "bracket", weight: 1 },
-            { entry: "IF", exit: "OB", type: "bracket", weight: 1 },
-            { entry: "OB", exit: "IF", type: "bracket", weight: 1 },
-            { entry: "IB", exit: "OF", type: "bracket", weight: 1 },
-            { entry: "OB", exit: "OF", type: "rocker", weight: 1 },
-            { entry: "IB", exit: "IF", type: "rocker", weight: 1 },
-            { entry: "OF", exit: "OB", type: "rocker", weight: 1 },
-            { entry: "IF", exit: "IB", type: "rocker", weight: 1 },
-            { entry: "OF", exit: "OB", type: "counter", weight: 1 },
-            { entry: "IF", exit: "IB", type: "counter", weight: 1 },
-            { entry: "OB", exit: "OF", type: "counter", weight: 1 },
-            { entry: "IB", exit: "IF", type: "counter", weight: 1 },
-            { entry: "OF", exit: "OF", type: "loop", weight: 1 },
-            { entry: "IF", exit: "IF", type: "loop", weight: 1 },
-            { entry: "OB", exit: "OB", type: "loop", weight: 1 },
-            { entry: "IB", exit: "IB", type: "loop", weight: 1 },
-            { entry: "OF", exit: "OF", type: "twizzle", variant: "even", weight: 0.5 },
-            { entry: "IF", exit: "IF", type: "twizzle", variant: "even", weight: 0.5 },
-            { entry: "OB", exit: "OB", type: "twizzle", variant: "even", weight: 0.5 },
-            { entry: "IB", exit: "IB", type: "twizzle", variant: "even", weight: 0.5 },
-            { entry: "OF", exit: "IB", type: "twizzle", variant: "odd", weight: 0.5 },
-            { entry: "IF", exit: "OB", type: "twizzle", variant: "odd", weight: 0.5 },
-            { entry: "OB", exit: "IF", type: "twizzle", variant: "odd", weight: 0.5 },
-            { entry: "IB", exit: "OF", type: "twizzle", variant: "odd", weight: 0.5 }
+            { entry: "FO", exit: "BI", type: "three turn", weight: 1 },
+            { entry: "FI", exit: "BO", type: "three turn", weight: 1 },
+            { entry: "BO", exit: "FI", type: "three turn", weight: 1 },
+            { entry: "BI", exit: "FO", type: "three turn", weight: 1 },
+            { entry: "FO", exit: "BI", type: "bracket", weight: 1 },
+            { entry: "FI", exit: "BO", type: "bracket", weight: 1 },
+            { entry: "BO", exit: "FI", type: "bracket", weight: 1 },
+            { entry: "BI", exit: "FO", type: "bracket", weight: 1 },
+            { entry: "BO", exit: "FO", type: "rocker", weight: 1 },
+            { entry: "BI", exit: "FI", type: "rocker", weight: 1 },
+            { entry: "FO", exit: "BO", type: "rocker", weight: 1 },
+            { entry: "FI", exit: "BI", type: "rocker", weight: 1 },
+            { entry: "FO", exit: "BO", type: "counter", weight: 1 },
+            { entry: "FI", exit: "BI", type: "counter", weight: 1 },
+            { entry: "BO", exit: "FO", type: "counter", weight: 1 },
+            { entry: "BI", exit: "FI", type: "counter", weight: 1 },
+            { entry: "FO", exit: "FO", type: "loop", weight: 1 },
+            { entry: "FI", exit: "FI", type: "loop", weight: 1 },
+            { entry: "BO", exit: "BO", type: "loop", weight: 1 },
+            { entry: "BI", exit: "BI", type: "loop", weight: 1 },
+            { entry: "FO", exit: "FO", type: "twizzle", variant: "even", weight: 0.5 },
+            { entry: "FI", exit: "FI", type: "twizzle", variant: "even", weight: 0.5 },
+            { entry: "BO", exit: "BO", type: "twizzle", variant: "even", weight: 0.5 },
+            { entry: "BI", exit: "BI", type: "twizzle", variant: "even", weight: 0.5 },
+            { entry: "FO", exit: "BI", type: "twizzle", variant: "odd", weight: 0.5 },
+            { entry: "FI", exit: "BO", type: "twizzle", variant: "odd", weight: 0.5 },
+            { entry: "BO", exit: "FI", type: "twizzle", variant: "odd", weight: 0.5 },
+            { entry: "BI", exit: "FO", type: "twizzle", variant: "odd", weight: 0.5 }
         ];
 
         const colors = ["#2129FF", "#FF6F00", "#21B1FF"];
@@ -106,10 +106,10 @@
         // Function to generate turn name from its properties
         function generateTurnName(foot, turn) {
             const edgeNames = {
-                "OF": "Outside Forward",
-                "IF": "Inside Forward",
-                "OB": "Outside Backward",
-                "IB": "Inside Backward"
+                "FO": "Forward Outside",
+                "FI": "Forward Inside",
+                "BO": "Back Outside",
+                "BI": "Back Inside"
             };
             const typeName = turn.variant? `${turn.variant}` : ``;
             return `${turn.entry} ${turn.type.charAt(0).toUpperCase() + turn.type.slice(1)} ${typeName}`;
@@ -247,7 +247,7 @@
 
                 const isClockWise = (edge) => {
                     const abbr = foot[0].toUpperCase() + edge;
-                    return !["LIF", "ROF", "LOB", "RIB"].includes(abbr);
+                    return !["LFI", "RFO", "LBO", "RBI"].includes(abbr);
                 }
                 const appendDir = (edge, angle1, angle2) => {
                     if (isClockWise(edge)) {
